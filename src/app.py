@@ -6,8 +6,7 @@ from flask_swagger import swagger
 from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
-from models import db, People, Planets, Users
-#from models import Person
+from models import db, People, Planets, Users, Favorites
 
 app = Flask(__name__)
 app.url_map.strict_slashes = False
@@ -17,7 +16,7 @@ if db_url is not None:
     app.config['SQLALCHEMY_DATABASE_URI'] = db_url.replace("postgres://", "postgresql://")
 else:
     app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:////tmp/test.db"
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False 
 
 MIGRATE = Migrate(app, db)
 db.init_app(app)
@@ -89,6 +88,32 @@ def get_favorites(user_id):
         "favorites": favorites_data
     }
     return jsonify(response_body), 200
+
+@app.route('/users/favorites', methods=['POST'])
+def add_favorite():
+    request_data = request.get_json()
+
+    if "user_id" not in request_data or "favorite_data" not in request_data:
+        raise APIException("Invalid request data.", status_code=400)
+
+    user_id = request_data["user_id"]
+    favorite_data = request_data["favorites"]
+
+    user = Users.query.get(user_id)
+    if user is None:
+        raise APIException("User not found", status_code=404)
+
+    new_favorite = Favorites(user_id=user_id, favorite_data=favorite_data)
+    db.session.add(new_favorite)
+    db.session.commit()
+
+    response_body = {
+        "message": "Favorite load succesfull",
+        "user_id": user_id,
+        "favorite_data": favorite_data
+    }
+
+    return jsonify(response_body), 201
 
 # this only runs if `$ python src/app.py` is executed
 if __name__ == '__main__':
