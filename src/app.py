@@ -41,7 +41,53 @@ def get_characters():
     response_body = {
         "people": people_data
     }
-        
+    return jsonify(response_body), 200
+
+@app.route('/people/<int:people_id>', methods=['GET'])
+def get_single_character(people_id):
+    character = People.query.get(people_id)
+    if character is None:
+        raise APIException("Character not found", status_code=404)
+    return jsonify(character.serialize()), 200
+
+@app.route('/planets', methods=['GET'])
+def get_planets():
+    planets = Planets.query.all()
+    planets_data = [planet.serialize() for planet in planets]
+    response_body = {
+        "planets": planets_data
+    }
+    return jsonify(response_body), 200
+
+@app.route('/planets/<int:planet_id>', methods=['GET'])
+def get_single_planet(planet_id):
+    planet = Planets.query.get(planet_id)
+    if planet is None:
+        raise APIException("Character not found", status_code=404)
+    return jsonify(planet.serialize()), 200
+
+@app.route('/users', methods=['GET'])
+def get_users():
+    users = Users.query.all()
+    users_data = [user.serialize() for user in users]
+    response_body = {
+        "users": users_data
+    }
+    return jsonify(response_body), 200
+
+@app.route('/users/favorites', methods=['GET'])
+def get_favorites(user_id):
+    user = Users.query.get(user_id)
+
+    if user is None:
+        raise APIException("User not found", status_code = 404)
+    
+    favorites = Favorites.query.filter_by(user_id=user_id).all()
+    favorites_data = [favorite.serialize() for favorite in favorites]
+    response_body = {
+        "user_id": user_id,
+        "favorites": favorites_data
+    }
     return jsonify(response_body), 200
 
 # this only runs if `$ python src/app.py` is executed
