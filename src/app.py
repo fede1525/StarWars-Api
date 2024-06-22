@@ -23,12 +23,11 @@ db.init_app(app)
 CORS(app)
 setup_admin(app)
 
-# Handle/serialize errors like a JSON object
 @app.errorhandler(APIException)
 def handle_invalid_usage(error):
     return jsonify(error.to_dict()), error.status_code
 
-# generate sitemap with all your endpoints
+
 @app.route('/')
 def sitemap():
     return generate_sitemap(app)
@@ -115,7 +114,7 @@ def add_favorite():
 
     return jsonify(response_body), 201
 
-# this only runs if `$ python src/app.py` is executed
+
 if __name__ == '__main__':
     PORT = int(os.environ.get('PORT', 3000))
     app.run(host='0.0.0.0', port=PORT, debug=False)
